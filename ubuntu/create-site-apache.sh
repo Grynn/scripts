@@ -1,4 +1,13 @@
 #!/bin/bash
+#Tested on trusty (14.04)
+#Create a website in /etc/apache2/sites-available and activates it.
+#Assumptions: 
+#	Site has a front-controller at /var/www/sitename/$app/web/index.php
+#	/var/www/sitename/$app is really a link to current version; example:
+#   	   /var/www/sitename/$app/ => /var/www/sitename/v0.0.1/
+#	(the above) should makes atomic deploys easy.
+#Assumes site will be deployed via git (which requires that user git be allowed to write /var/www/sitename)
+#and that user www-data should be allowed to read/execute but not write to /var/www/sitename
 
 set -o errexit -o nounset 
 
@@ -19,7 +28,7 @@ fi
 
 pathchk -p "${1}" || exit -1
 
-#DEBIAN_FRONTEND=noninteractive apt-get update -q && apt-get install -q -y apache2 php5
+DEBIAN_FRONTEND=noninteractive apt-get update -q && apt-get install -q -y apache2 php5
 a2enmod unique_id
 
 addgroup --system web
