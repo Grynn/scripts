@@ -1,0 +1,13 @@
+#!/bin/bash 
+
+if [ -z $TOKEN ] 
+	then
+	if [ -z token ]; then 
+		echo 'No token; please export TOKEN=<token>'; 
+		exit -1; 
+	else
+		TOKEN=$(<token);
+	fi
+fi
+
+curl -s  -H "Authorization: Bearer $TOKEN" https://api.digitalocean.com/v2/droplets/ #| jq '.droplets[] | {id: .id, name: .name, region: .region.slug } '
