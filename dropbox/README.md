@@ -1,0 +1,9 @@
+Usage notes for Dropbox Uploader
+
+Create a ~/.dropbox_uploader with the following contents (created on first-run if not already present).
+
+APPKEY=75wnhf0t9dbv5qs
+APPSECRET=...
+ACCESS_LEVEL=sandbox
+OAUTH_ACCESS_TOKEN=...
+OAUTH_ACCESS_TOKEN_SECRET=...
