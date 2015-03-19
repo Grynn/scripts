@@ -4,9 +4,8 @@ use Data::Dumper;
 use strict;
 use warnings;
 
-open TMP, "<temp.txt";
-my @lines = <TMP>;
-close TMP;
+my @lines = `netstat -tulnp`;
+die "Call to netstat -tulnp failed" unless  ($? == 0); 
 
 do {
  $_ = shift @lines
