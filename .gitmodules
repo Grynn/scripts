@@ -1,3 +1,6 @@
 [submodule "dropbox/uploader"]
 	path = dropbox/uploader
 	url = git@github.com:Grynn/Dropbox-Uploader.git
+[submodule "local"]
+	path = local
+	url = git@bitbucket.org:Grynn/scripts-local.git
