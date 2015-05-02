@@ -29,9 +29,9 @@ chmod 700 ~git/.ssh
 
 #Add pub key to git
 if [ -f ~root/.ssh/authorized_keys ]; then
-	cp ~root/.ssh/authorized_keys ~git/.ssh/authorized_keys
+	cat ~root/.ssh/authorized_keys >> ~git/.ssh/authorized_keys
 else
-        touch ~git/.ssh/authorized_keys
+    touch ~git/.ssh/authorized_keys
 	echo "Created blank authorized_keys file in ~git/.ssh; please add SSH public key"
 fi
 chown git:nogroup ~git/.ssh/authorized_keys
