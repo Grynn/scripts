@@ -9,5 +9,5 @@ Scripts: Grynn's misc. sysadmin scripts
 
 ## Cloning 
 
-git clone https://github.com/grynn/scripts
-git submodule update --init   #Only required if you need dropbox/uploader
+    git clone https://github.com/grynn/scripts
+    git submodule update --init   #Only required if you need dropbox/uploader
