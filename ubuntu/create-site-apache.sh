@@ -42,7 +42,7 @@ if expr index "$1" \/ >/dev/null; then
 	exit -3
 fi
 
-pathchk -p "${1}" || exit -1
+#pathchk -p "${1}" || exit -1
 
 DEBIAN_FRONTEND=noninteractive apt-get update -q && apt-get install -q -y apache2 php5
 a2enmod unique_id
