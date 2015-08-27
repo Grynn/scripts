@@ -2,9 +2,10 @@
 #Tested on trusty (14.04)
 #Create a website in /etc/apache2/sites-available and activates it.
 #Assumptions: 
-#	Site has a front-controller at /var/www/sitename/$app/web/index.php
-#	/var/www/sitename/$app is really a link to current version; example:
-#   	   /var/www/sitename/$app/ => /var/www/sitename/v0.0.1/
+#	Site has a front-controller at /var/www/sitename/$app/public/index.php
+#   	Ex: Laravel uses $siteroot/public for the front-controller)
+#	/var/www/sitename/$app is really a link to current version
+#   	Ex: /var/www/sitename/$app/ => /var/www/sitename/v0.0.1/
 #	(the above) should makes atomic deploys easy.
 #Assumes site will be deployed via git (which requires that user git be allowed to write /var/www/sitename)
 #and that user www-data should be allowed to read/execute but not write to /var/www/sitename
@@ -53,8 +54,8 @@ usermod -G web www-data
 #Create an example site
 mkdir -p "/var/www/$1/logs"
 chown git:web "/var/www/$1" -R
-chmod u=rwx,g=rs,o=r "/var/www/$1"
-chmod u=rwx,g=rws,o=r "/var/www/$1/logs"
+chmod u=rwx,g=rxs,o=r "/var/www/$1"
+chmod u=rwx,g=rwxs,o=r "/var/www/$1/logs"
 
 #Create /etc/apache2/sites-available/sitename.conf (iff not exists)
 if [ -f "/etc/apache2/sites-available/${1}.conf" ]; then 
