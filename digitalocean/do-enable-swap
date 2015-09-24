@@ -1,0 +1,12 @@
+#!/bin/bash
+# DigitalOcean enable swap
+
+set -e
+[[ $EUID -eq 1 ]] || echo { "$(basename $0) must be run as root"; exit 1 }
+swapon -s | grep -q "/swapfile" && { echo "/swapfile already exists and is inuse."; exit 1 }
+
+fallocate -l 4G /swapfile
+chmod 0600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+swapon -s
