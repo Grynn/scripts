@@ -1,0 +1,91 @@
+#!/bin/bash
+set -e -o nounset
+
+# Read newest version of site from $GIT_DIR
+# Update writable directories
+# Update composer and dependencies
+# Email stakeholders
+
+## CONFIG
+SITE_NAME=api.median.work
+PERSISTENT_DIRS=(storage)
+## END CONFIG
+
+### CONVENTION BASED CONFIG
+TARGET_DIR="/var/www/$SITE_NAME"     #Target dir should be owned by git:web
+export GIT_DIR=~git/${SITE_NAME}     #Owned by git:nogroup
+REF=${1:-master}                     #Branch to deploy
+### END CONVENTION
+
+### Check tools
+which composer > /dev/null || (echo "could not find composer in path"; exit -1)
+which git > /dev/null || (echo "could not find git in path"; exit -1)
+
+#Check that script is being run as user git
+[ $(id -un) == "git" ] || (echo $(basename $0) must be run as user 'git'; exit -1)
+
+#Check that TARGET_DIR exists
+[ -d ${TARGET_DIR} ] || (echo \'$TARGET_DIR\' does not exist \(or is not a directory\); exit -1)
+
+#Check that GIT_DIR exists
+[ -d "$GIT_DIR" ] || (echo \$GIT_DIR \(${GIT_DIR}\) is unset or does not exist; exit -1)
+
+#Check that GIT_DIR is a bare repo (doesn't really matter, but why not?)
+git rev-parse --is-bare-repository > /dev/null || (echo \$GIT_DIR \($GIT_DIR\) is not a bare repo; exit -1)
+
+#Check for atleast 1G free space
+FREE=$(df -Pk . | tail -1 | awk '{print $4}')
+[ ${FREE} -gt "1000000" ] || (echo "\tLess than 1G of free disk-space. Aborting."; exit -1)
+
+#Check that $REF exists...
+[ ! -z $(git show-ref ${REF} | cut -d ' ' -f1) ] ||
+    (
+        echo "Could not find commit $REF in repo $GIT_DIR";
+        exit -1
+    )
+
+#Try to find a tag like v0.0.1 to describe hash (or fall back to full hash)
+HASH=$(git describe --tags --always --match "v[0-9]*" $REF)
+export GIT_WORK_TREE=/var/www/${SITE_NAME}/${HASH}
+echo "Creating $GIT_WORK_TREE"
+[ -d "$GIT_WORK_TREE" ] || mkdir "$GIT_WORK_TREE"
+
+#Check that GIT_WORK_TREE is owned by git:web
+if [ $(stat -c '%U:%G' $GIT_WORK_TREE) != "git:web" ]; then
+    echo \$GIT_WORK_TREE is not owned by \'git:web\'
+    exit -1;
+fi
+
+#Checkout REF to GIT_WORK_TREE
+git checkout -qf ${REF}
+
+#Laravel specific deploy
+rm -rf "$TARGET_DIR/storage"
+cd ${TARGET_DIR}
+ln -s ../.env .env
+
+#Create writable/persistent dir links
+for d in ${PERSISTENT_DIRS[*]}; do
+    bd=$(basename "$d")
+    [ -d "$TARGET_DIR/$d" ] && (ln -sTvf "$TARGET_DIR/$d" "$GIT_WORK_TREE/$bd")
+done
+
+#Update composer
+cd ${GIT_WORK_TREE}
+composer install --no-dev -o
+
+#Swap current & prev (i.e. set current to point to newly checked out dir)
+cd "$TARGET_DIR"
+echo -n "Updating link: "
+ln -sTfv "$GIT_WORK_TREE" "app"
+
+#TODO: Send email
+#TODO: Remove previous deployments?
+#TODO: Run migrations
+
+# Apply tag rem on successfull deployment
+git tag -f rem ${REF}
+
+git log | mail -s "Deployed $ref on $(hostname -f)" vishal.doshi@directi.com
+
+echo "Done!"
